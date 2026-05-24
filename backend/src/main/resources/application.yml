@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: siv-backend
+
+  # Conexión a PostgreSQL
+  datasource:
+    url: jdbc:postgresql://localhost:5432/beraka_db
+    username: postgres
+    password: PostgresLearning*
+    driver-class-name: org.postgresql.Driver
+
+  # Configuración de JPA (Mapeo Objeto-Relacional)
+  jpa:
+    hibernate:
+      ddl-auto: update # Crea las tablas según nuestro código automáticamente
+    show-sql: true # Para ver en consola el SQL que se ejecuta por debajo
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# Configuración del servidor
+server:
+  port: 8080
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  # 8 horas en milisegundos (RNF-03)
+  expiration: 28800000
