@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/contexts/auth-context'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import { LoginPage } from '../views/login'
-import { POSPage } from '../views/pos'
-import { InventoryPage } from '../views/inventory'
-import { NewProductPage } from '../views/new-product'
-import { ReportsPage } from '../views/reports'
+import { LoginPage } from '@/views/login'
+import { POSPage } from '@/views/pos'
+import { InventoryPage } from '@/views/inventory'
+import { NewProductPage } from '@/views/new-product'
+import { ReportsPage } from '@/views/reports'
 
 // Protected Route wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, isLoading } = useAuth()
+function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) {
+    const { isAuthenticated, isLoading, user } = useAuth()
 
     if (isLoading) {
         return (
@@ -24,6 +24,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />
+    }
+
+    if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+        return <Navigate to="/pos" replace />
     }
 
     return <DashboardLayout>{children}</DashboardLayout>
@@ -53,9 +57,9 @@ function AppRoutes() {
         <Routes>
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/pos" element={<ProtectedRoute><POSPage /></ProtectedRoute>} />
-            <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
-            <Route path="/new-product" element={<ProtectedRoute><NewProductPage /></ProtectedRoute>} />
-            <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute allowedRoles={["ADMIN"]}><InventoryPage /></ProtectedRoute>} />
+            <Route path="/new-product" element={<ProtectedRoute allowedRoles={["ADMIN"]}><NewProductPage /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute allowedRoles={["ADMIN"]}><ReportsPage /></ProtectedRoute>} />
 
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/pos" replace />} />

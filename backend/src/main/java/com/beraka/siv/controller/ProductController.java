@@ -59,4 +59,49 @@ public class ProductController {
 
         return ResponseEntity.ok(productService.createProduct(productDto));
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ProductDto> update(
+            @PathVariable Long id,
+            @RequestBody ProductDto request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
+    }
+
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ProductDto> updateWithImage(
+            @PathVariable Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String price,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Integer minStock,
+            @RequestParam(required = false) MultipartFile image) {
+
+        ProductDto productDto = new ProductDto();
+        if (name != null) productDto.setName(name);
+        if (description != null) productDto.setDescription(description);
+        if (price != null) productDto.setPrice(new java.math.BigDecimal(price));
+        if (categoryId != null) productDto.setCategoryId(categoryId);
+        if (minStock != null) productDto.setMinStock(minStock);
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                String imageUrl = productService.saveProductImage(image);
+                productDto.setImageUrl(imageUrl);
+            } catch (Exception e) {
+                productDto.setImageUrl(null);
+            }
+        }
+
+        return ResponseEntity.ok(productService.updateProduct(id, productDto));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
 }

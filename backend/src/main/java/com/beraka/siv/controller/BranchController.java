@@ -27,4 +27,10 @@ public class BranchController {
     public ResponseEntity<BranchDto> create(@RequestBody BranchDto request) {
         return ResponseEntity.ok(branchService.createBranch(request));
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<BranchDto> update(@PathVariable Long id, @RequestBody BranchDto request) {
+        return ResponseEntity.ok(branchService.updateBranch(id, request));
+    }
 }

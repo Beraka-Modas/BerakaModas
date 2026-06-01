@@ -31,7 +31,7 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
         String token = jwtService.generateToken(user);
 
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getUsername(), user.getRole().name());
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -47,6 +47,6 @@ public class AuthService {
         // 3. Le generamos un token para que ya entre logueado
         String token = jwtService.generateToken(user);
 
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getUsername(), user.getRole().name());
     }
 }

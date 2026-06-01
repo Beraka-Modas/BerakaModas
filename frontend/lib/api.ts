@@ -69,6 +69,8 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string
+  username: string
+  role: string
 }
 
 export const authService = {
@@ -79,8 +81,10 @@ export const authService = {
     // Guardamos el token en el navegador
     localStorage.setItem('authToken', response.data.token)
 
-    // Como nuestro backend solo devuelve el token, guardamos el username temporalmente
-    const user = { username: credentials.username, role: 'ADMIN' }
+    const user = {
+      username: response.data.username || credentials.username,
+      role: response.data.role || 'ADMIN'
+    }
     localStorage.setItem('user', JSON.stringify(user))
 
     return response.data
@@ -148,6 +152,27 @@ export const productService = {
       }
     })
     return response.data
+  },
+
+  // Actualizar producto
+  update: async (id: number, product: Partial<CreateProductRequest>): Promise<Product> => {
+    const response = await api.put<Product>(`/products/${id}`, product)
+    return response.data
+  },
+
+  // Actualizar producto con imagen
+  updateWithImage: async (id: number, formData: FormData): Promise<Product> => {
+    const response = await api.put<Product>(`/products/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  },
+
+  // Eliminar producto
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/products/${id}`)
   }
 }
 
@@ -162,6 +187,20 @@ export const categoryService = {
   getAll: async (): Promise<Category[]> => {
     const response = await api.get<Category[]>('/categories')
     return response.data
+  },
+
+  create: async (category: Omit<Category, 'id'>): Promise<Category> => {
+    const response = await api.post<Category>('/categories', category)
+    return response.data
+  },
+
+  update: async (id: number, category: Omit<Category, 'id'>): Promise<Category> => {
+    const response = await api.put<Category>(`/categories/${id}`, category)
+    return response.data
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/categories/${id}`)
   }
 }
 
@@ -175,6 +214,16 @@ export interface Branch {
 export const branchService = {
   getAll: async (): Promise<Branch[]> => {
     const response = await api.get<Branch[]>('/branches')
+    return response.data
+  },
+
+  create: async (branch: Omit<Branch, 'id'>): Promise<Branch> => {
+    const response = await api.post<Branch>('/branches', branch)
+    return response.data
+  },
+
+  update: async (id: number, branch: Omit<Branch, 'id'>): Promise<Branch> => {
+    const response = await api.put<Branch>(`/branches/${id}`, branch)
     return response.data
   }
 }
@@ -294,9 +343,32 @@ export interface DailyReport {
   }
 }
 
+export interface SaleItemDetailDto {
+  productName: string
+  size: string
+  quantity: number
+  unitPrice: number | string
+}
+
+export interface SaleDetailDto {
+  saleId: number
+  date: string
+  total: number | string
+  paymentMethod: string
+  status: string
+  branchName: string
+  sellerName: string
+  items: SaleItemDetailDto[]
+}
+
 export const reportService = {
   getDaily: async (): Promise<DailyReport> => {
     const response = await api.get<DailyReport>('/reports/daily')
+    return response.data
+  },
+
+  getDailySales: async (): Promise<SaleDetailDto[]> => {
+    const response = await api.get<SaleDetailDto[]>('/reports/daily/sales')
     return response.data
   }
 }

@@ -34,11 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (username: string, password: string) => {
     // 1. Llamamos a authService (que hace la petición a Spring Boot y guarda el token)
-    await authService.login({ username, password })
+    const response = await authService.login({ username, password })
 
     // 2. Una vez exitoso, leemos el usuario que guardó api.ts y actualizamos la pantalla
-    const savedUser = authService.getUser()
-    setUser(savedUser)
+    setUser({
+      username: response.username || username,
+      role: response.role || 'VENDEDOR'
+    })
   }
 
   const logout = () => {

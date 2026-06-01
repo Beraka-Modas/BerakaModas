@@ -5,14 +5,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { StockDto } from '@/lib/api'
+import type { StockDto, Branch } from '@/lib/api'
 import type { Product } from './product-card'
 
 interface SizeSelectorModalProps {
   isOpen: boolean
   product: Product | null
   stockDetails: StockDto[]
-  onSelect: (size: string) => void
+  branches: Branch[]
+  onSelect: (size: string, branchId: number, branchName: string) => void
   onClose: () => void
 }
 
@@ -20,21 +21,28 @@ export function SizeSelectorModal({
   isOpen,
   product,
   stockDetails,
+  branches,
   onSelect,
   onClose
 }: SizeSelectorModalProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null)
+  const [selectedBranchName, setSelectedBranchName] = useState<string | null>(null)
 
   const handleConfirm = () => {
-    if (selectedSize) {
-      onSelect(selectedSize)
+    if (selectedSize && selectedBranchId && selectedBranchName) {
+      onSelect(selectedSize, selectedBranchId, selectedBranchName)
       setSelectedSize(null)
+      setSelectedBranchId(null)
+      setSelectedBranchName(null)
       onClose()
     }
   }
 
   const handleClose = () => {
     setSelectedSize(null)
+    setSelectedBranchId(null)
+    setSelectedBranchName(null)
     onClose()
   }
 
@@ -100,15 +108,35 @@ export function SizeSelectorModal({
               {/* Mostrar desglose por sede para la talla seleccionada */}
               {selectedSize && (
                 <div className="mt-4 p-3 rounded-lg bg-muted/50 space-y-2">
-                  <p className="text-sm font-medium">Stock disponible por sede:</p>
-                  {sizeGroups[selectedSize]?.map((stock) => (
-                    stock.quantity > 0 && (
-                      <div key={`${stock.size}-${stock.branchName}`} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{stock.branchName}</span>
-                        <Badge variant="secondary">{stock.quantity}</Badge>
-                      </div>
+                  <p className="text-sm font-medium">Selecciona la sede:</p>
+                  {sizeGroups[selectedSize]?.filter(s => s.quantity > 0).map((stock) => {
+                    const branch = branches.find(b => b.name === stock.branchName)
+                    const branchId = branch?.id
+                    return (
+                      <button
+                        key={`${stock.size}-${stock.branchName}`}
+                        onClick={() => {
+                          if (branchId) {
+                            setSelectedBranchId(branchId)
+                            setSelectedBranchName(stock.branchName)
+                          }
+                        }}
+                        disabled={!branchId}
+                        className={cn(
+                          "w-full flex justify-between items-center p-2 rounded border-2 transition-colors",
+                          selectedBranchId === branchId
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50",
+                          !branchId && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        <span className="text-sm">{stock.branchName}</span>
+                        <Badge variant={selectedBranchId === branchId ? "default" : "secondary"}>
+                          {stock.quantity} {stock.quantity === 1 ? 'und' : 'unds'}
+                        </Badge>
+                      </button>
                     )
-                  ))}
+                  })}
                 </div>
               )}
             </div>
@@ -121,7 +149,7 @@ export function SizeSelectorModal({
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!selectedSize}
+            disabled={!selectedSize || !selectedBranchId}
             className="bg-primary hover:bg-primary/90"
           >
             Agregar al Carrito

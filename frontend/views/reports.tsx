@@ -11,13 +11,13 @@ import {
   CreditCard,
   ArrowRightLeft
 } from 'lucide-react'
-import { reportService, salesService, type DailyReport, type SaleWithProducts } from '@/lib/api'
+import { reportService, type DailyReport, type SaleDetailDto } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/auth-context'
 
 export function ReportsPage() {
   const [report, setReport] = useState<DailyReport | null>(null)
-  const [sales, setSales] = useState<SaleWithProducts[]>([])
+  const [sales, setSales] = useState<SaleDetailDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState('')
   const { user } = useAuth()
@@ -29,9 +29,9 @@ export function ReportsPage() {
         const data = await reportService.getDaily()
         setReport(data)
 
-        // Cargar ventas guardadas del día
-        const dailySales = salesService.getDailySales()
-        setSales(dailySales)
+        // Cargar ventas detalladas desde el backend
+        const dailySalesData = await reportService.getDailySales()
+        setSales(dailySalesData)
       } catch (error: any) {
         console.error('Error al cargar reporte:', error)
         if (error.response?.status === 403) {
@@ -236,6 +236,7 @@ export function ReportsPage() {
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Productos (Cantidad × Talla)</th>
                     <th className="text-center py-3 px-4 font-medium text-muted-foreground">Método</th>
                     <th className="text-right py-3 px-4 font-medium text-muted-foreground">Valor</th>
+                    <th className="text-left py-3 px-4 font-medium text-muted-foreground">Local</th>
                     <th className="text-left py-3 px-4 font-medium text-muted-foreground">Vendedor</th>
                   </tr>
                 </thead>
@@ -259,6 +260,9 @@ export function ReportsPage() {
                       </td>
                       <td className="py-3 px-4 text-right font-semibold">
                         {formatCurrency(sale.total)}
+                      </td>
+                      <td className="py-3 px-4 text-xs">
+                        {sale.branchName || 'N/A'}
                       </td>
                       <td className="py-3 px-4 text-xs">
                         {sale.sellerName || 'Desconocido'}

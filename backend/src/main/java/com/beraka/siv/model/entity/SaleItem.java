@@ -24,6 +24,9 @@ public class SaleItem {
     @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal unitPrice;
 
+    @Column(name = "size", length = 10)
+    private String size; // Talla del producto vendido
+
     // A qué venta pertenece
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sale_id", nullable = false)

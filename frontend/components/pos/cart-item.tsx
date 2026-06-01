@@ -8,6 +8,8 @@ export interface CartItem {
   product: Product
   quantity: number
   selectedSize: string
+  selectedBranchId: number
+  selectedBranchName: string
 }
 
 interface CartItemRowProps {
@@ -28,7 +30,7 @@ export function CartItemRow({ item, index, onUpdateQuantity, onRemove }: CartIte
           {item.product.name}
         </h4>
         <p className="text-xs text-muted-foreground">
-          Talla: {item.selectedSize} · ${item.product.price.toLocaleString("es-CO")} c/u
+          Talla: {item.selectedSize} · Sede: {item.selectedBranchName} · ${item.product.price.toLocaleString("es-CO")} c/u
         </p>
       </div>
 

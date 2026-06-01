@@ -4,8 +4,12 @@ import com.beraka.siv.model.dto.ProductDto;
 import com.beraka.siv.model.entity.Category;
 import com.beraka.siv.model.entity.Product;
 import com.beraka.siv.repository.CategoryRepository;
+import com.beraka.siv.repository.InventoryLogRepository;
 import com.beraka.siv.repository.ProductRepository;
+import com.beraka.siv.repository.SaleItemRepository;
+import com.beraka.siv.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +28,9 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final InventoryLogRepository inventoryLogRepository;
+    private final StockRepository stockRepository;
+    private final SaleItemRepository saleItemRepository;
 
     // Carpeta donde se guardan las imágenes
     private static final String UPLOAD_DIR = "uploads/products/";
@@ -63,7 +70,50 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    // --- Métodos Privados Auxiliares ---
+    public ProductDto updateProduct(Long id, ProductDto dto) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+
+        // Actualizar solo los campos que vengan en el DTO
+        if (dto.getName() != null && !dto.getName().trim().isEmpty()) {
+            product.setName(dto.getName());
+        }
+        if (dto.getDescription() != null && !dto.getDescription().trim().isEmpty()) {
+            product.setDescription(dto.getDescription());
+        }
+        if (dto.getPrice() != null) {
+            product.setPrice(dto.getPrice());
+        }
+        if (dto.getMinStock() != null) {
+            product.setMinStock(dto.getMinStock());
+        }
+        if (dto.getImageUrl() != null && !dto.getImageUrl().trim().isEmpty()) {
+            product.setImageUrl(dto.getImageUrl());
+        }
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + dto.getCategoryId()));
+            product.setCategory(category);
+        }
+
+        Product updated = productRepository.save(product);
+        return mapToDto(updated);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+
+        // Limpiar primero las tablas hijas para evitar errores de FK
+        inventoryLogRepository.deleteByProductId(id);
+        stockRepository.deleteByProductId(id);
+        saleItemRepository.deleteByProductId(id);
+
+        productRepository.delete(product);
+    }
+
+    // ...existing code...
 
     private String generateSku(Category category) {
         // Obtener las primeras 3 letras de la categoría (en mayúsculas)
@@ -77,7 +127,17 @@ public class ProductService {
         String currentYear = String.valueOf(Year.now().getValue());
 
         // Formato final: PREFIJO - CONSECUTIVO(3 dígitos) - AÑO (Ej: BLU-001-2026)
-        return String.format("%s-%03d-%s", prefix, count, currentYear);
+        // Generar SKU inicial
+        String sku = String.format("%s-%03d-%s", prefix, count, currentYear);
+
+        // Verificar si el SKU ya existe y generar uno �nico si es necesario
+        int sequence = (int) count;
+        while (productRepository.existsBySku(sku)) {
+            sequence++;
+            sku = String.format("%s-%03d-%s", prefix, sequence, currentYear);
+        }
+
+        return sku;
     }
 
     private ProductDto mapToDto(Product p) {

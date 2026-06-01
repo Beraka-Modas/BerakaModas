@@ -7,4 +7,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     //"SELECT COUNT(*) FROM product WHERE category_id = ?"
     long countByCategoryId(Long categoryId);
+
+    boolean existsBySku(String sku);
 }

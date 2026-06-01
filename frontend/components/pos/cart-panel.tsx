@@ -29,8 +29,7 @@ export function CartPanel({
   isProcessing = false,
 }: CartPanelProps) {
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
-  const tax = 0 // 0% impuesto
-  const total = subtotal + tax
+  const total = subtotal
 
   const canFinalize = items.length > 0 && paymentMethod !== null
 
@@ -82,28 +81,22 @@ export function CartPanel({
 
         <Separator />
 
-        {/* Summary */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium tabular-nums">
-              ${subtotal.toLocaleString("es-CO")}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Impuestos (0%)</span>
-            <span className="font-medium tabular-nums">
-              ${tax.toLocaleString("es-CO")}
-            </span>
-          </div>
-          <Separator />
-          <div className="flex justify-between items-baseline">
-            <span className="text-base font-semibold text-foreground">TOTAL A PAGAR</span>
-            <span className="text-2xl font-bold text-primary tabular-nums">
-              ${total.toLocaleString("es-CO")}
-            </span>
-          </div>
-        </div>
+         {/* Summary */}
+         <div className="space-y-2">
+           <div className="flex justify-between text-sm">
+             <span className="text-muted-foreground">Subtotal</span>
+             <span className="font-medium tabular-nums">
+               ${subtotal.toLocaleString("es-CO")}
+             </span>
+           </div>
+           <Separator />
+           <div className="flex justify-between items-baseline">
+             <span className="text-base font-semibold text-foreground">TOTAL A PAGAR</span>
+             <span className="text-2xl font-bold text-primary tabular-nums">
+               ${total.toLocaleString("es-CO")}
+             </span>
+           </div>
+         </div>
 
         {/* Finalize Button */}
         <Button

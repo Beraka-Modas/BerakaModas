@@ -70,6 +70,7 @@ public class SaleService {
             saleItem.setSale(sale);
             saleItem.setProduct(product);
             saleItem.setQuantity(itemReq.getQuantity());
+            saleItem.setSize(itemReq.getSize()); // Guardar la talla vendida
             saleItem.setUnitPrice(product.getPrice()); // Tomamos el precio del catálogo
 
             itemsToSave.add(saleItem);

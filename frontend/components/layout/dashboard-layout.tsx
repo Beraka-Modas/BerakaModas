@@ -31,6 +31,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     navigate('/login')
   }
 
+  const visibleMenuItems = user?.role === 'VENDEDOR'
+    ? menuItems.filter((item) => item.id === 'pos')
+    : menuItems
+
   return (
       <div className="flex h-screen bg-background">
         <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-card border-b border-border z-40 flex items-center justify-between px-4">
@@ -57,7 +61,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <nav className="flex-1 p-3 space-y-1">
-            {menuItems.map((item) => {
+            {visibleMenuItems.map((item) => {
               const Icon = item.icon
               const isActive = location.pathname === item.path
               return (
